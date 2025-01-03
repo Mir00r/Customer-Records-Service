@@ -1,0 +1,3 @@
+customerId,accountNumber,description
+CUST001,ACC001,Regular checking account
+CUST002,ACC002,Savings account
