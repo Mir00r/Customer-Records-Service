@@ -28,7 +28,7 @@ dependencies {
 
     // Database
     implementation 'org.postgresql:postgresql'
-    implementation 'org.flywaydb:flyway-core'  // for database migrations
+    implementation 'org.flywaydb:flyway-core:9.22.1' // for database migrations
 
     // Utils
     implementation 'org.apache.commons:commons-lang3'

@@ -16,10 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Entity
 @Table(name = "customer_accounts")
-public class CustomerAccount {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+public class CustomerAccount extends BaseEntity {
 
   @Column(unique = true)
   private String customerId;
@@ -29,37 +26,8 @@ public class CustomerAccount {
 
   private String description;
 
-  @Version
-  private Long version;
-
-  @Column(name = "created_at")
-  private LocalDateTime createdAt;
-
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
-
   @Transient
   private final ReentrantLock lock = new ReentrantLock();
-
-  @PrePersist
-  protected void onCreate() {
-    createdAt = LocalDateTime.now();
-    updatedAt = LocalDateTime.now();
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
-
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
 
   public String getCustomerId() {
     return customerId;
@@ -83,30 +51,6 @@ public class CustomerAccount {
 
   public void setDescription(String description) {
     this.description = description;
-  }
-
-  public Long getVersion() {
-    return version;
-  }
-
-  public void setVersion(Long version) {
-    this.version = version;
-  }
-
-  public LocalDateTime getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(LocalDateTime createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public LocalDateTime getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public void setUpdatedAt(LocalDateTime updatedAt) {
-    this.updatedAt = updatedAt;
   }
 
   public ReentrantLock getLock() {
