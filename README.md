@@ -29,9 +29,10 @@ This project implements a customer account management system with features inclu
 
 ## **Architecture Overview**
 
+![Class Diagram](images/class_diagram.png)
+
 ### **Class Diagram**
 ```mermaid
-tclassDiagram
     class CustomerAccountController {
         +getAccounts(search, pageable)
         +updateDescription(accountNumber, description)
@@ -80,16 +81,20 @@ tclassDiagram
 ```
 
 ### **Sequence Diagram**
+
+![Sequence Diagram](images/sequance_diagram.png)
+
 ```mermaid
-sequenceDiagram
-    participant File as Text File
-    participant Reader as FileItemReader
-    participant Processor as ItemProcessor
-    participant Writer as ItemWriter
-    participant DB as Database
+@startuml
+    participant File as "Text File"
+    participant Reader as "FlatFileItemReader"
+    participant Processor as "ItemProcessor"
+    participant Writer as "JpaItemWriter"
+    participant DB as "Database"
     
+    Note over File,DB: Batch job starts
     File->>Reader: Read records chunk
-    loop For each record
+    loop Process each chunk of 10 records
         Reader->>Processor: Process record
         Processor->>Processor: Validate & Transform
         Processor->>Writer: Send processed record
@@ -98,9 +103,18 @@ sequenceDiagram
     Note over Writer,DB: Commit transaction
     
     alt Error occurs
-        Writer->>Writer: Rollback transaction
-        Writer->>Reader: Retry/Skip based on policy
+        Writer->>Writer: Log error details
+        Writer->>Reader: Skip faulty record
+        Writer->>Reader: Retry processing (if policy allows)
     end
+    
+    alt Concurrent update detected
+        Writer->>Writer: Lock record
+        Writer->>DB: Retry save operation
+    end
+    Note over File,DB: Batch job ends
+@enduml
+
 ```
 
 ---
@@ -110,6 +124,7 @@ sequenceDiagram
 - **Programming Language**: Java
 - **Frameworks**: Spring Boot, Spring Batch
 - **Database**: PostgreSQL
+- **Database Migration**: FLyway
 - **Build Tool**: Gradle
 - **Testing Framework**: JUnit 5, Mockito
 - **Logging**: SLF4J, Logback
@@ -120,7 +135,7 @@ sequenceDiagram
 
 ### **Prerequisites**
 1. Java 17 or higher.
-2. Maven 3.8.1 or higher.
+2. Gradle 8.11.1 or higher.
 3. PostgreSQL database.
 4. IDE (e.g., IntelliJ IDEA or Eclipse).
 
@@ -142,15 +157,15 @@ sequenceDiagram
    ```
 4. Build the project:
    ```bash
-   mvn clean install
+   gradle clean install
    ```
 5. Run the application:
    ```bash
-   mvn spring-boot:run
+   gradle spring-boot:run
    ```
 6. Access the APIs:
-    - Retrieve Accounts: `GET /api/accounts?page=0&size=10`
-    - Update Description: `PATCH /api/accounts/{accountNumber}`
+    - Retrieve Accounts: `GET /api/v1/accounts?page=0&size=10`
+    - Update Description: `PATCH /api/v1/{accountNumber}/description`
 
 ### **Testing**
 Run unit tests:
@@ -163,13 +178,13 @@ mvn test
 ## **REST API Features**
 
 1. **Retrieve Accounts**:
-    - URL: `/api/accounts`
+    - URL: `/api/v1/accounts`
     - Method: `GET`
     - Query Parameters: `search`, `page`, `size`.
     - Response: Paginated list of customer accounts.
 
 2. **Update Description**:
-    - URL: `/api/accounts/{accountNumber}`
+    - URL: `/api/v1/{accountNumber}/description`
     - Method: `PATCH`
     - Payload: `description` (string).
 
